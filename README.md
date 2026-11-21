@@ -92,7 +92,7 @@ flowchart TD
 
 1. **Define and validate.** Preserve the raw CSV, document column meanings, confirm feature and target timing, and record reproducible split identifiers.
 2. **Explore and prepare.** Use development data for EDA. Investigate outliers, retain valid extremes, and test justified feature additions.
-3. **Train and compare.** Establish a mean-prediction baseline, then compare Linear Regression, Random Forest, and ANN using the same outer validation folds. ANN architecture remains unspecified at this stage.
+3. **Train and compare.** Establish a mean-prediction baseline, then compare Linear Regression, Random Forest.
 4. **Tune and evaluate.** Tune within development cross-validation. Use RMSE for selection and report MAE, R², fold variability, actual-versus-predicted plots, residuals, segment errors, and feature importance.
 5. **Demonstrate locally.** Save the complete fitted pipeline and reuse it for Streamlit predictions. Verify that script and UI predictions agree for identical inputs.
 
