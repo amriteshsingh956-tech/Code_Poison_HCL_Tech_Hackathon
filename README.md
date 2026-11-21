@@ -38,89 +38,82 @@ We believe that great solutions come from combining diverse ideas, strong teamwo
 *Built with teamwork, creativity, and a little bit of Code Poison! ☠️*
 
 
-## Customer Spend Prediction Workflow
+## ShopSmart Customer Spend Prediction
 
-**Option B — ShopSmart Customer Spend Prediction**
+Option B estimates a customer's spending from age, annual income, membership and city tier. The local demonstration uses Linear Regression. On 10,000 held-out synthetic profiles it achieved RMSE **1,862.11**, MAE **1,484.88** and R² **0.754**. The data provider has yet to confirm currency, observation windows and target period. The results apply to the supplied synthetic population.
 
-Our goal is to predict customer spending using demographics, historical purchases, and engagement. This is the agreed design for the build; model results are not yet available.
+### Install and run
 
-### Workflow flowchart
+From the repository root on Windows, use Python 3.12.14. Create the environment once:
+
+```powershell
+py -3.12 -m venv .venv
+& .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Run the complete workflow with this single command. Adjust the CSV path on another laptop. The intake verifies the supplied snapshot and preserves it locally. Each subsequent stage uses the same Python interpreter.
+
+```powershell
+& .\.venv\Scripts\python.exe -m scripts.run_workflow --source "C:/Users/gr251/OneDrive/Desktop/ShopSmart_synthetic_cleaned (1).csv"
+```
+
+Run the following commands for one prediction, batch inference, automated UI checks and the local demo:
+
+```powershell
+& .\.venv\Scripts\python.exe -m scripts.predict --dual --row '{"Age":35,"Annual_Income":700000,"Membership_Type":"Silver","City_Tier":"Tier 2"}'
+& .\.venv\Scripts\python.exe -m scripts.predict --dual --csv reports/generated/holdout/example_inputs.csv --out reports/generated/demo_predictions.csv
+& .\.venv\Scripts\python.exe -m scripts.verify_demo
+& .\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8527
+```
+
+The sample returns **17,102.72** and **Medium**. Batch uploads retain row order and identifier strings. The app displays the metrics stored beside the fitted pipeline. Generated files remain on the laptop.
+
+### Workflow and design
 
 ```mermaid
 flowchart TD
-    A["Local ShopSmart CSV"] --> B["Confirm target period and historical feature windows"]
-    B --> C["Validate schema, types, missing values and duplicates"]
-    C --> D["Reserve an untouched test set"]
-
-    D --> E["80% development data"]
-    D --> T["20% final test data"]
-
-    E --> F["EDA: distributions, correlations, categories and outliers"]
-    F --> G["Define candidate features"]
-    G --> H["Five-fold cross-validation and hyperparameter search"]
-
-    subgraph CV["Inside each cross-validation fold"]
-        H --> I["Fit preprocessing on the training fold only"]
-        I --> J["Numeric: median imputation and model-specific scaling"]
-        I --> K["Categorical: Unknown imputation and one-hot or binary encoding"]
-        J --> L["Traditional ML: Linear Regression and Random Forest"]
-        K --> L
-        J --> M["ANN regression"]
-        K --> M
-        L --> N["Score the validation fold against the mean baseline"]
-        M --> N
-    end
-
-    N --> O["Select configuration using development CV results"]
-    O --> P["Refit the selected pipeline on all development data"]
-    P --> Q["Final test evaluation: RMSE, MAE, R² and residuals"]
-    T --> Q
-    Q --> R["Save fitted preprocessing and model locally"]
-    R --> S["Local Streamlit demonstration"]
-    U["New customer inputs or local batch CSV"] --> S
-    S --> V["Apply saved pipeline and display spending predictions"]
-
-    classDef input fill:#EDF3F5,stroke:#596C7C,color:#10283F;
-    classDef process fill:#FFFFFF,stroke:#167D8D,color:#10283F;
-    classDef model fill:#10283F,stroke:#10283F,color:#FFFFFF;
-    class A,T,U input;
-    class B,C,D,E,F,G,H,I,J,K,N,O,P,Q,R,S,V process;
-    class L,M model;
+    A["Local CSV and intake audit"] --> B["Freeze development and test positions"]
+    B --> C["Development EDA and feature checks"]
+    C --> D["Compare mean, linear, tree, forest and ANN on shared folds"]
+    D --> E["Tune trees with inner grid searches"]
+    E --> F["Refit selected pipeline on development"]
+    B --> H["Reserved holdout"]
+    H --> G["Final evaluation"]
+    F --> G
+    G --> P["Package pipeline, schema and metrics"]
+    P --> I["Shared prediction functions"]
+    I --> J["Local Streamlit form and batch CSV"]
+    I --> K["Prediction CLI"]
 ```
 
-### How we will proceed
+Seed 42 reserves 20% for testing and fixes five development folds. Customer IDs and dates are unavailable, so validation assumes exchangeable synthetic rows. Learned transforms fit within each training fold. The target band, redundant age band and fields with uncertain historical timing are excluded. An optional log-income feature yielded no material gain.
 
+| Submission detail | Where to find it |
+|---|---|
+| Data dictionary, numeric checks and provider questions | [Data intake](docs/data-intake.md) |
+| Distribution, missingness, correlations, segment comparisons and feature decisions | [Development EDA](docs/development-eda.md) |
+| Five candidate models, feature variants and ANN convergence | [Model comparison](docs/model-comparison.md) |
+| Nested validation, grid values and selection criterion | [Model selection](docs/model-selection.md) |
+| Holdout errors, high-spender limitation and interpretation | [Final evaluation](docs/final-evaluation.md) |
+| Library purposes, model comparison table, tuning results, architecture, team workstreams and 60-second presentation | [Architecture and demo guide](docs/architecture.md) |
 1. **Define and validate.** Preserve the raw CSV, document column meanings, confirm feature and target timing, and record reproducible split identifiers.
 2. **Explore and prepare.** Use development data for EDA. Investigate outliers, retain valid extremes, and test justified feature additions.
 3. **Train and compare.** Establish a mean-prediction baseline, then compare Linear Regression, Random Forest.
 4. **Tune and evaluate.** Tune within development cross-validation. Use RMSE for selection and report MAE, R², fold variability, actual-versus-predicted plots, residuals, segment errors, and feature importance.
 5. **Demonstrate locally.** Save the complete fitted pipeline and reuse it for Streamlit predictions. Verify that script and UI predictions agree for identical inputs.
 
-### Preprocessing decisions
+Member 1 owns data validation and preprocessing. Member 2 owns EDA, error analysis and documentation. Member 3 owns traditional models, tuning and packaging. Member 4 owns ANN and the local Streamlit demonstration.
 
-| Input type | Planned treatment |
-|---|---|
-| Numeric missing values | Impute training-fold medians; evaluate missingness indicators. |
-| Categorical missing values | Fill with an explicit Unknown category. |
-| Membership, preferred category, city tier | Apply one-hot encoding with consistent unseen-category handling. |
-| Discount usage | Map Yes/No to a binary value. |
-| Numeric scaling | Standardise inputs for linear and ANN models; Random Forest does not require scaling. |
-| Outliers | Correct confirmed errors and retain genuine extremes. Learn any statistical thresholds within training folds. |
+Local outputs include `data/prepared/development.csv`, `artifacts/spend_bundle.pkl`, `artifacts/metrics.json`, and plots under `reports/generated/eda/` and `reports/generated/holdout/`. Install instructions reproduce the pinned project dependencies. The verified workspace uses those versions in its existing parent virtual environment.
 
-### Validation and scope
+## Both website outputs
 
-- **Timing must be confirmed.** The supplied file has no customer IDs or dates, and `Amount_Spent` has no stated period. Until the provider confirms that inputs precede the target month, describe the result as a spending prediction prototype rather than validated next-month forecasting.
-- **The split is provisional.** An 80/20 random split with shuffled five-fold development CV assumes independent customer records. Use chronological validation for dated observations and group-aware splitting when needed for the evaluation objective.
-- **Prevent leakage.** Fit imputation, encoding, scaling, statistical thresholds, and feature selection inside each training fold. Transform validation and test data with the fitted steps. Never use final test performance to tune the model.
-- **Keep the demonstration local.** The CSV, trained model, and Streamlit application run on a laptop. Flask, FastAPI, Docker, cloud deployment, and dataset hosting are outside this presentation scope.
+The form and CSV return Predicted_Amount_Spent and Predicted_Amount_Spent_Range together. Read the [both-output specification](docs/dual-output.md) for fold-local thresholds and original-label evaluation. Final range accuracy is **53.00%**, macro-F1 **0.53850**, and **6.68%** of predictions miss by at least two bands. [Aggregate comparisons](docs/results/comparison.csv) include runtime and default-versus-tuned results. Run `python -m unittest discover -s tests -v` and `python -m scripts.verify_demo` for contract and UI checks. Customer CSVs, row-level outputs and serialized models remain local.
 
-### Four-person ownership
+## Completed implementation and notebook handoff
 
-| Workstream | Responsibility |
-|---|---|
-| Member 1 — Data and preprocessing | Data dictionary, validation, split manifest, reusable preprocessing. |
-| Member 2 — EDA and evaluation | Exploration, feature hypotheses, metrics, explanations, documentation. |
-| Member 3 — Traditional ML | Baselines, traditional models, tuning, selected pipeline packaging. |
-| Member 4 — ANN and demonstration | ANN comparison, local Streamlit interface, prediction integration. |
+The project implements intake and data validation, a fingerprinted 80/20 split, five shared development folds, fold-local preprocessing, development-only EDA, original-versus-log-income comparisons, five regression candidates, nested grid searches for both tree models, final holdout evaluation, consistent amount and range outputs, a saved schema and pipeline bundle, shared single/batch inference, and a local Streamlit demo. Automated checks cover serialization, prediction consistency, missing fields, unseen categories and all four band boundaries.
 
-**First build milestone:** confirm the target contract, freeze the shared split, and run a reproducible baseline through the preprocessing pipeline.
+There are 14 generated notebook exports in the [notebook source index](notebooks/README.md). Each contains the corresponding Python source in readable code cells with no stored execution outputs. Python entry points remain available for Streamlit and the reproducible workflow. The teammate notebooks are preserved.
+
+The handoff includes a GitHub-ready ZIP of code, notebooks, documentation and aggregate results, plus a complete ZIP with a separate local_only folder for datasets, fitted models and row-level results. Upload only the repository folder to GitHub. The supplied currency and target period still require provider confirmation.

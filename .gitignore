@@ -1,0 +1,20 @@
+# Local customer data and generated outputs
+*.csv
+!docs/results/*.csv
+*.csv.gz
+data/
+artifacts/
+output/
+outputs/
+reports/generated/
+*.pkl
+*.pickle
+*.joblib
+
+# Local Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/

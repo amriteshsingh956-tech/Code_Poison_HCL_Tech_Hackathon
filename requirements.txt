@@ -1,0 +1,5 @@
+-r requirements-eda.txt
+scipy==1.18.1
+joblib==1.6.0
+threadpoolctl==3.7.0
+streamlit==1.66.1
