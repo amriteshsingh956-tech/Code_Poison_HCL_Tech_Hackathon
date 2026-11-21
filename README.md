@@ -440,6 +440,7 @@ Open the local URL displayed in your terminal, usually:
 ## 14. Team
 
 **Team Name:** Code Poison  
+**Team Members:** Amritesh Singh | Gaurav Rastogi | Naveli Gupta | Vyas Bhumit
 **Event:** HCLTech Hackathon  
 **Project:** ShopSmart – Customer Spend Prediction
 
