@@ -98,6 +98,11 @@ Seed 42 reserves 20% for testing and fixes five development folds. Customer IDs 
 | Nested validation, grid values and selection criterion | [Model selection](docs/model-selection.md) |
 | Holdout errors, high-spender limitation and interpretation | [Final evaluation](docs/final-evaluation.md) |
 | Library purposes, model comparison table, tuning results, architecture, team workstreams and 60-second presentation | [Architecture and demo guide](docs/architecture.md) |
+1. **Define and validate.** Preserve the raw CSV, document column meanings, confirm feature and target timing, and record reproducible split identifiers.
+2. **Explore and prepare.** Use development data for EDA. Investigate outliers, retain valid extremes, and test justified feature additions.
+3. **Train and compare.** Establish a mean-prediction baseline, then compare Linear Regression, Random Forest.
+4. **Tune and evaluate.** Tune within development cross-validation. Use RMSE for selection and report MAE, R², fold variability, actual-versus-predicted plots, residuals, segment errors, and feature importance.
+5. **Demonstrate locally.** Save the complete fitted pipeline and reuse it for Streamlit predictions. Verify that script and UI predictions agree for identical inputs.
 
 Member 1 owns data validation and preprocessing. Member 2 owns EDA, error analysis and documentation. Member 3 owns traditional models, tuning and packaging. Member 4 owns ANN and the local Streamlit demonstration.
 
