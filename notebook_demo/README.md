@@ -7,7 +7,7 @@ This separate app implements the best model recorded in `Untitled5.ipynb`: Linea
 Run these commands from the repository root with the existing project environment (on this laptop, `E:/pro pro/.venv/Scripts/python.exe`):
 
 ```powershell
-python -m pip install -r requirements.txt
+python -m pip install -r notebook_demo/requirements.txt
 python -m notebook_demo.model --source "C:/Users/gr251/OneDrive/Desktop/ShopSmart_synthetic_cleaned (1).csv"
 python -m notebook_demo.verify
 python -m streamlit run notebook_demo/app.py --server.address 127.0.0.1 --server.port 8530
