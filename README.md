@@ -40,6 +40,8 @@ We believe that great solutions come from combining diverse ideas, strong teamwo
 
 ## ShopSmart Customer Spend Prediction
 
+**New notebook-based demo:** [Interactive eight-input Streamlit app](notebook_demo/README.md) reproduces the Linear Regression winner from `Untitled5.ipynb`, with customer and batch inputs, downloadable predictions, evaluation metrics and plots. Run `python -m streamlit run notebook_demo/app.py --server.address 127.0.0.1 --server.port 8530` after its documented training command. This separate demo includes timing-uncertain historical fields; its scores must not be confused with the four-input prototype below.
+
 Option B estimates a customer's spending from age, annual income, membership and city tier. The local demonstration uses Linear Regression. On 10,000 held-out synthetic profiles it achieved RMSE **1,862.11**, MAE **1,484.88** and R² **0.754**. The data provider has yet to confirm currency, observation windows and target period. The results apply to the supplied synthetic population.
 
 ### Install and run
