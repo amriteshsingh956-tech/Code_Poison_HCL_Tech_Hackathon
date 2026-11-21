@@ -104,3 +104,11 @@ Local outputs include `data/prepared/development.csv`, `artifacts/spend_bundle.p
 ## Both website outputs
 
 The form and CSV return Predicted_Amount_Spent and Predicted_Amount_Spent_Range together. Read the [both-output specification](docs/dual-output.md) for fold-local thresholds and original-label evaluation. Final range accuracy is **53.00%**, macro-F1 **0.53850**, and **6.68%** of predictions miss by at least two bands. [Aggregate comparisons](docs/results/comparison.csv) include runtime and default-versus-tuned results. Run `python -m unittest discover -s tests -v` and `python -m scripts.verify_demo` for contract and UI checks. Customer CSVs, row-level outputs and serialized models remain local.
+
+## Completed implementation and notebook handoff
+
+The project implements intake and data validation, a fingerprinted 80/20 split, five shared development folds, fold-local preprocessing, development-only EDA, original-versus-log-income comparisons, five regression candidates, nested grid searches for both tree models, final holdout evaluation, consistent amount and range outputs, a saved schema and pipeline bundle, shared single/batch inference, and a local Streamlit demo. Automated checks cover serialization, prediction consistency, missing fields, unseen categories and all four band boundaries.
+
+There are 14 generated notebook exports under notebooks/, indexed by notebooks/README.md. Each contains the corresponding Python source in readable code cells with no stored execution outputs. Python entry points remain available for Streamlit and the reproducible workflow. The teammate notebooks are preserved.
+
+The handoff includes a GitHub-ready ZIP of code, notebooks, documentation and aggregate results, plus a complete ZIP with a separate local_only folder for datasets, fitted models and row-level results. Upload only the repository folder to GitHub. The supplied currency and target period still require provider confirmation.
