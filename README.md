@@ -1,121 +1,450 @@
-# ☠️ Code Poison
+# 🛍️ ShopSmart — Customer Spend Prediction
 
-### HCLTech Placement Hackathon
+**Team Code Poison | HCLTech Hackathon**
 
-Welcome to the official repository of **Team Code Poison**, participating in the HCLTech Placement Hackathon.
+ShopSmart is an end-to-end Machine Learning project designed to predict customer spending based on demographic information, income, website activity, previous purchases, membership type, preferred category, city tier, and discount usage.
 
-We are a team of four enthusiastic individuals passionate about technology, innovation, and problem-solving. Our goal is to collaborate, think creatively, and develop practical, technology-driven solutions to real-world challenges.
-
-## 👥 Team Members
-
-| S. No. | Name |
-|:---:|---|
-| 1 | Amritesh Singh |
-| 2 | Naveli Gupta |
-| 3 | Gaurav Rastogi |
-| 4 | Bhumit Vyas |
-
-## 🎯 Our Mission
-
-- Solve real-world problems through technology.
-- Develop innovative and efficient solutions.
-- Apply analytical and technical skills.
-- Collaborate effectively and learn together.
-- Deliver impactful results within the hackathon timeline.
-
-## 💡 Our Approach
-
-**Think. Innovate. Collaborate. Build.**
-
-We believe that great solutions come from combining diverse ideas, strong teamwork, and continuous experimentation.
-
-## 🏆 Event
-
-**HCLTech Placement Hackathon – 2026**
+The project covers the complete ML pipeline, from synthetic data preparation and Exploratory Data Analysis (EDA) to data cleaning, feature engineering, model training, evaluation, and deployment through an interactive Streamlit application.
 
 ---
 
-*Built with teamwork, creativity, and a little bit of Code Poison! ☠️*
+## 1. Problem Statement
 
+Understanding customer spending patterns helps businesses identify customer segments and make informed decisions.
 
-## ShopSmart Customer Spend Prediction
+ShopSmart aims to predict the amount a customer spends based on eight customer attributes using supervised machine learning regression techniques.
 
-**New notebook-based demo:** [Interactive eight-input Streamlit app](notebook_demo/README.md) reproduces the Linear Regression winner from `Untitled5.ipynb`, with customer and batch inputs, downloadable predictions, evaluation metrics and plots. Run `python -m streamlit run notebook_demo/app.py --server.address 127.0.0.1 --server.port 8530` after its documented training command. This separate demo includes timing-uncertain historical fields; its scores must not be confused with the four-input prototype below.
+**Objective:** Predict customer spending using historical customer characteristics and purchasing behaviour.
 
-Option B estimates a customer's spending from age, annual income, membership and city tier. The local demonstration uses Linear Regression. On 10,000 held-out synthetic profiles it achieved RMSE **1,862.11**, MAE **1,484.88** and R² **0.754**. The data provider has yet to confirm currency, observation windows and target period. The results apply to the supplied synthetic population.
+**ML Task:** Regression
 
-### Install and run
+**Target Variable:** `Amount_Spent`
 
-From the repository root on Windows, use Python 3.12.14. Create the environment once:
+---
 
-```powershell
-py -3.12 -m venv .venv
-& .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-Run the complete workflow with this single command. Adjust the CSV path on another laptop. The intake verifies the supplied snapshot and preserves it locally. Each subsequent stage uses the same Python interpreter.
-
-```powershell
-& .\.venv\Scripts\python.exe -m scripts.run_workflow --source "C:/Users/gr251/OneDrive/Desktop/ShopSmart_synthetic_cleaned (1).csv"
-```
-
-Run the following commands for one prediction, batch inference, automated UI checks and the local demo:
-
-```powershell
-& .\.venv\Scripts\python.exe -m scripts.predict --dual --row '{"Age":35,"Annual_Income":700000,"Membership_Type":"Silver","City_Tier":"Tier 2"}'
-& .\.venv\Scripts\python.exe -m scripts.predict --dual --csv reports/generated/holdout/example_inputs.csv --out reports/generated/demo_predictions.csv
-& .\.venv\Scripts\python.exe -m scripts.verify_demo
-& .\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8527
-```
-
-The sample returns **17,102.72** and **Medium**. Batch uploads retain row order and identifier strings. The app displays the metrics stored beside the fitted pipeline. Generated files remain on the laptop.
-
-### Workflow and design
+## 2. Project Workflow
 
 ```mermaid
 flowchart TD
-    A["Local CSV and intake audit"] --> B["Freeze development and test positions"]
-    B --> C["Development EDA and feature checks"]
-    C --> D["Compare mean, linear, tree, forest and ANN on shared folds"]
-    D --> E["Tune trees with inner grid searches"]
-    E --> F["Refit selected pipeline on development"]
-    B --> H["Reserved holdout"]
-    H --> G["Final evaluation"]
-    F --> G
-    G --> P["Package pipeline, schema and metrics"]
-    P --> I["Shared prediction functions"]
-    I --> J["Local Streamlit form and batch CSV"]
-    I --> K["Prediction CLI"]
+    A["Synthetic Dataset (50,000 Records)"] --> B["Exploratory Data Analysis"]
+    B --> C["Data Cleaning"]
+    C --> D["Feature Engineering"]
+    D --> E["Cleaned Dataset"]
+    E --> F["Feature Selection"]
+    F --> G["Train-Test Split (80:20)"]
+    G --> H["Data Preprocessing"]
+    H --> I["Model Training"]
+    I --> J["Model Evaluation"]
+    J --> K["Best Model: Linear Regression"]
+    K --> L["Model Serialization using Joblib"]
+    L --> M["Streamlit Deployment"]
+    M --> N["Single Customer Prediction"]
+    M --> O["Batch Customer Prediction"]
+    M --> P["Model Evaluation Dashboard"]
 ```
 
-Seed 42 reserves 20% for testing and fixes five development folds. Customer IDs and dates are unavailable, so validation assumes exchangeable synthetic rows. Learned transforms fit within each training fold. The target band, redundant age band and fields with uncertain historical timing are excluded. An optional log-income feature yielded no material gain.
+---
 
-| Submission detail | Where to find it |
+## 3. Dataset Description
+
+The project uses a synthetic customer dataset containing approximately **50,000 records**.
+
+Synthetic data provides a controlled environment for developing and testing the machine learning pipeline.
+
+### Input Features
+
+| Feature | Description | Type |
+|---|---|---|
+| Age | Customer age | Numerical |
+| Annual_Income | Annual income | Numerical |
+| Website_Visits | Number of website visits | Numerical |
+| Previous_Purchases | Number of previous purchases | Numerical |
+| Membership_Type | Membership category | Categorical |
+| Preferred_Category | Preferred shopping category | Categorical |
+| City_Tier | Customer city classification | Categorical |
+| Discount_Used | Whether a discount was used | Categorical |
+
+### Target Variable
+
+`Amount_Spent` – Customer spending amount.
+
+### Additional Engineered Features
+
+- `Amount_Spent_Range`: Divides customers into five spending categories using quantiles.
+- `Age_Group`: Groups customers based on age.
+
+These additional features are used for exploratory analysis and segmentation but excluded from the final model inputs.
+
+---
+
+## 4. Exploratory Data Analysis (EDA)
+
+Performed using `SyntheticDataEDA (1).ipynb`.
+
+The EDA stage focuses on understanding the dataset, identifying patterns, and examining relationships between customer attributes and spending behaviour.
+
+### Activities Performed
+
+1. Dataset inspection and statistical summaries.
+2. Missing-value identification.
+3. Numerical feature distribution analysis.
+4. Correlation analysis using heatmaps.
+5. Spending pattern analysis.
+6. Customer segmentation based on age and spending.
+7. Category-wise and membership-wise spending analysis.
+
+### Visualizations
+
+- Correlation heatmap.
+- Annual income distribution.
+- Customer spending distribution.
+- Category-wise spending analysis.
+- Age-group spending analysis.
+- Membership-type spending comparison.
+
+---
+
+## 5. Data Cleaning and Feature Engineering
+
+Performed using `data_cleaning_shopsmart.ipynb`.
+
+### Missing Value Treatment
+
+| Feature | Technique |
 |---|---|
-| Data dictionary, numeric checks and provider questions | [Data intake](docs/data-intake.md) |
-| Distribution, missingness, correlations, segment comparisons and feature decisions | [Development EDA](docs/development-eda.md) |
-| Five candidate models, feature variants and ANN convergence | [Model comparison](docs/model-comparison.md) |
-| Nested validation, grid values and selection criterion | [Model selection](docs/model-selection.md) |
-| Holdout errors, high-spender limitation and interpretation | [Final evaluation](docs/final-evaluation.md) |
-| Library purposes, model comparison table, tuning results, architecture, team workstreams and 60-second presentation | [Architecture and demo guide](docs/architecture.md) |
-1. **Define and validate.** Preserve the raw CSV, document column meanings, confirm feature and target timing, and record reproducible split identifiers.
-2. **Explore and prepare.** Use development data for EDA. Investigate outliers, retain valid extremes, and test justified feature additions.
-3. **Train and compare.** Establish a mean-prediction baseline, then compare Linear Regression, Random Forest.
-4. **Tune and evaluate.** Tune within development cross-validation. Use RMSE for selection and report MAE, R², fold variability, actual-versus-predicted plots, residuals, segment errors, and feature importance.
-5. **Demonstrate locally.** Save the complete fitted pipeline and reuse it for Streamlit predictions. Verify that script and UI predictions agree for identical inputs.
+| Annual_Income | Median Imputation |
+| Website_Visits | Median Imputation |
+| Membership_Type | Mode Imputation |
+| Preferred_Category | Mode Imputation |
 
-Member 1 owns data validation and preprocessing. Member 2 owns EDA, error analysis and documentation. Member 3 owns traditional models, tuning and packaging. Member 4 owns ANN and the local Streamlit demonstration.
+### Outlier Analysis
 
-Local outputs include `data/prepared/development.csv`, `artifacts/spend_bundle.pkl`, `artifacts/metrics.json`, and plots under `reports/generated/eda/` and `reports/generated/holdout/`. Install instructions reproduce the pinned project dependencies. The verified workspace uses those versions in its existing parent virtual environment.
+The Interquartile Range (IQR) method is used to identify potential outliers.
 
-## Both website outputs
+Steps:
+- Calculate Q1 and Q3.
+- Calculate IQR.
+- Determine lower and upper bounds.
+- Identify and visualize potential outliers using boxplots.
 
-The form and CSV return Predicted_Amount_Spent and Predicted_Amount_Spent_Range together. Read the [both-output specification](docs/dual-output.md) for fold-local thresholds and original-label evaluation. Final range accuracy is **53.00%**, macro-F1 **0.53850**, and **6.68%** of predictions miss by at least two bands. [Aggregate comparisons](docs/results/comparison.csv) include runtime and default-versus-tuned results. Run `python -m unittest discover -s tests -v` and `python -m scripts.verify_demo` for contract and UI checks. Customer CSVs, row-level outputs and serialized models remain local.
+### Feature Engineering
 
-## Completed implementation and notebook handoff
+Two additional features are created:
 
-The project implements intake and data validation, a fingerprinted 80/20 split, five shared development folds, fold-local preprocessing, development-only EDA, original-versus-log-income comparisons, five regression candidates, nested grid searches for both tree models, final holdout evaluation, consistent amount and range outputs, a saved schema and pipeline bundle, shared single/batch inference, and a local Streamlit demo. Automated checks cover serialization, prediction consistency, missing fields, unseen categories and all four band boundaries.
+**1. Age_Group**
 
-There are 14 generated notebook exports in the [notebook source index](notebooks/README.md). Each contains the corresponding Python source in readable code cells with no stored execution outputs. Python entry points remain available for Streamlit and the reproducible workflow. The teammate notebooks are preserved.
+Customers are divided into age-based segments.
 
-The handoff includes a GitHub-ready ZIP of code, notebooks, documentation and aggregate results, plus a complete ZIP with a separate local_only folder for datasets, fitted models and row-level results. Upload only the repository folder to GitHub. The supplied currency and target period still require provider confirmation.
+**2. Amount_Spent_Range**
+
+Customers are divided into five quantile-based spending categories:
+
+- Very Low
+- Low
+- Medium
+- High
+- Very High
+
+The cleaned dataset is exported into CSV format for subsequent model training.
+
+---
+
+## 6. Model Development
+
+Performed using `Model_Training.ipynb`.
+
+### Feature Selection
+
+Eight independent variables are used to predict the target variable `Amount_Spent`.
+
+The engineered columns `Amount_Spent_Range` and `Age_Group` are excluded from model training.
+
+### Train-Test Split
+
+- Training Data: 80%
+- Testing Data: 20%
+- Random State: 42
+
+### Models Explored
+
+| Model | Description |
+|---|---|
+| Linear Regression | Baseline regression model |
+| Decision Tree Regressor | Tree-based regression |
+| Tuned Decision Tree | Hyperparameter optimization |
+| Random Forest Regressor | Ensemble learning approach |
+
+RandomizedSearchCV is used for hyperparameter tuning of tree-based models.
+
+### Model Comparison
+
+Recorded test RMSE values:
+
+| Model | RMSE |
+|---|---:|
+| Linear Regression | 844.20 |
+| Tuned Random Forest | 981.26 |
+| Tuned Decision Tree | 1237.52 |
+| Decision Tree | 1442.00 |
+
+**Selected Model: Linear Regression**
+
+Linear Regression achieved the lowest recorded RMSE among the evaluated models and was selected for the final deployment.
+
+---
+
+## 7. Model Preprocessing and Training
+
+The deployment-ready implementation is maintained in `model.py`.
+
+### Numerical Preprocessing
+- Missing values handled using median imputation.
+
+### Categorical Preprocessing
+- Missing values replaced with `Unknown`.
+- One-Hot Encoding applied.
+- First category dropped as the baseline.
+- Unseen categories handled using `handle_unknown="ignore"`.
+
+### Model Pipeline
+
+```python
+pipeline = Pipeline([
+    ("preprocessing", preprocessing),
+    ("model", LinearRegression())
+])
+
+pipeline.fit(x_train, y_train)
+```
+
+The complete preprocessing and prediction pipeline is saved using Joblib.
+
+### Generated Artifacts
+
+- `model.pkl` – Trained model and preprocessing pipeline.
+- `metrics.json` – Evaluation metrics and training metadata.
+- `evaluation.csv` – Actual values, predictions, and residuals.
+- `evaluation.png` – Model evaluation visualizations.
+
+---
+
+## 8. Model Evaluation
+
+The selected Linear Regression model is evaluated using four regression metrics.
+
+| Metric | Description |
+|---|---|
+| MAE | Mean Absolute Error |
+| MSE | Mean Squared Error |
+| RMSE | Root Mean Squared Error |
+| R² | Coefficient of Determination |
+
+### Final Model Performance
+
+| Metric | Test Result |
+|---|---:|
+| MAE | 648.30 |
+| MSE | 712,679.63 |
+| RMSE | 844.20 |
+| R² Score | 0.9494 |
+
+Additional results:
+
+- Training Records: 40,000
+- Testing Records: 10,000
+- Training R²: 0.9501
+- Mean Prediction Benchmark RMSE: 3,751.86
+
+The evaluation dashboard includes:
+- Actual vs Predicted Plot.
+- Residual Plot.
+- Model Metrics.
+- Benchmark Comparison.
+
+**Note:** These are reproduced notebook results, not an independent post-selection test estimate. The dataset is synthetic, and the spending period and currency are undocumented. Therefore, these results should not be interpreted as proof of real-world future-spend forecasting performance.
+
+---
+
+## 9. Streamlit Deployment
+
+The project includes an interactive Streamlit application implemented in `app.py`.
+
+### Application Features
+
+**1. Customer Spend Estimation**
+
+- Enter customer information.
+- Select categorical attributes.
+- Generate individual spending predictions.
+- View the estimated spending amount.
+
+**2. Batch Predictions**
+
+- Upload customer records through CSV.
+- Generate predictions for multiple customers.
+- View predictions in tabular format.
+- Download the predicted results as CSV.
+
+**3. Model Evaluation Dashboard**
+
+- Display MAE, MSE, RMSE, and R².
+- Compare the model against the mean-prediction benchmark.
+- Visualize actual vs predicted values.
+- Analyze residuals.
+- Download evaluation metrics.
+
+### Application Screenshots
+
+Add your Streamlit screenshots here:
+
+```markdown
+![Customer Prediction](images/customer_prediction.png)
+
+![Batch Prediction](images/batch_prediction.png)
+
+![Model Evaluation](images/model_evaluation.png)
+```
+
+---
+
+## 10. Project Structure
+
+```text
+ShopSmart/
+│
+├── data/
+│   ├── ShopSmart_synthetic_50000.csv
+│   └── ShopSmart_synthetic_cleaned.csv
+│
+├── notebooks/
+│   ├── SyntheticDataEDA (1).ipynb
+│   ├── data_cleaning_shopsmart.ipynb
+│   └── Model_Training.ipynb
+│
+├── notebook_demo/
+│   ├── __init__.py
+│   ├── app.py
+│   ├── model.py
+│   ├── verify.py
+│   └── requirements.txt
+│
+├── artifacts/
+│   └── notebook_demo/
+│       ├── model.pkl
+│       ├── metrics.json
+│       ├── evaluation.csv
+│       └── evaluation.png
+│
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 11. Installation and Execution
+
+### Step 1: Clone Repository
+
+```bash
+git clone <YOUR_GITHUB_REPOSITORY_URL>
+cd ShopSmart
+```
+
+### Step 2: Create Virtual Environment
+
+```bash
+python -m venv .venv
+```
+
+Activate environment:
+
+**Windows**
+```bash
+.venv\Scripts\activate
+```
+
+**macOS / Linux**
+```bash
+source .venv/bin/activate
+```
+
+### Step 3: Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Step 4: Run Notebooks
+
+Execute notebooks in the following order:
+
+1. `SyntheticDataEDA (1).ipynb`
+2. `data_cleaning_shopsmart.ipynb`
+3. `Model_Training.ipynb`
+
+Ensure that the CSV paths referenced in the notebooks are updated according to your local environment.
+
+### Step 5: Train the Deployment Model
+
+```bash
+python -m notebook_demo.model --source "data/ShopSmart_synthetic_cleaned.csv"
+```
+
+This command trains the selected Linear Regression model and generates the required artifacts.
+
+### Step 6: Verify Model
+
+```bash
+python -m notebook_demo.verify
+```
+
+### Step 7: Launch Streamlit
+
+```bash
+streamlit run notebook_demo/app.py
+```
+
+Open the local URL displayed in your terminal, usually:
+
+`http://localhost:8501`
+
+---
+
+## 12. Technology Stack
+
+| Category | Technologies |
+|---|---|
+| Programming Language | Python |
+| Data Manipulation | Pandas, NumPy |
+| Data Visualization | Matplotlib, Seaborn |
+| Machine Learning | Scikit-learn |
+| Model Persistence | Joblib |
+| Deployment | Streamlit |
+| Development Environment | Jupyter Notebook / JupyterLab |
+| Version Control | Git and GitHub |
+
+---
+
+## 13. Future Scope
+
+- Integrate real-world customer purchase data.
+- Establish a clearly defined prediction horizon.
+- Improve model validation using independent datasets.
+- Implement customer segmentation and personalized recommendations.
+- Add model monitoring and performance tracking.
+- Explore advanced ensemble and boosting algorithms.
+- Enhance the dashboard with business intelligence visualizations.
+
+---
+
+## 14. Team
+
+**Team Name:** Code Poison  
+**Event:** HCLTech Hackathon  
+**Project:** ShopSmart – Customer Spend Prediction
+
+---
+
+## Disclaimer
+
+ShopSmart is an educational and hackathon prototype developed using synthetic customer data. Predictions represent model estimates in the source dataset's units and should not be treated as verified customer spending forecasts or guaranteed business outcomes.
